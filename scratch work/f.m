@@ -1,0 +1,6 @@
+function dydt = f(t,y,g)
+
+dydt = [y(2);   ... 
+        g    ...
+        ];
+end

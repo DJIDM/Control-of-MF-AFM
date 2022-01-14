@@ -1,0 +1,59 @@
+(MFAFM line 54)
+eA = @(bt,ot) Ar - (bt - ot);                         % error on the oscillation amplitude
+
+
+(MFAFM line 67)
+bi = b;
+
+(MFAFM line 85)
+% 'b' is estimated as an integral controller w/ K_I = 10^4
+   if i == 1
+       bi = KI*eA(b,o(1:i))*t(c);
+   else
+       bi = KI*trapz(eA(b(1:i),o(1:i)));
+   end
+   b = [b;bi];
+
+
+-------------------------------------------------------------------------------------------------
+(MFAFM line 99)
+% dynamic PID for base height adjustment
+   A = abs(b - o);
+   if A <= At
+       bn = KI*y(c,3);
+   else
+       bn = KI*((Ar - At) + Ks*(At - A));
+   end
+   
+   db = b - bn; 
+   b = bn; bt = [bt;bn];
+   sn = o + db; st = [st;sn];
+   s = s + db;
+   eAt = [eAt; Ar - A];
+
+-------------------------------------------------------------------------------------------------
+(MFAFM line 99 - alternative)
+% error signal tracking for base height adjustment
+   A = abs(b - o); eA = Ar - A;
+   b = b + eA/2;
+   sn = o - eA/2;
+   s = s - eA/2;
+   
+   bt = [bt;bn];
+   st = [st;sn];
+   eAt = [eAt;eA];
+
+-------------------------------------------------------------------------------------------------
+(MFAFM line 99 - cap on height)
+% PID controller for base height adjustment
+   bn = KP*(Ar - A) + KI*y(c,3) + KD*last(gradient(eAt));
+%    if bn < o
+%        bn = 0;
+%    end
+%    db = b - bn;
+   b = bn; bt = [bt;b];
+   A = b - o;
+-------------------------------------------------------------------------------------------------
+
+ \dot x_1 = x_2 
+ \dot x_2 = -\omega^2_nx_1 - \frac{\omega_n}{Q}x_2 + u + F(b + x_1 - \sigma)
